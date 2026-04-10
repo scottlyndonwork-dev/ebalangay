@@ -1,0 +1,54 @@
+{
+  "cli": {
+    "version": ">= 10.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_API_URL": "https://api.ebalangay.com",
+          "EXPO_PUBLIC_APP_NAME": "eBalangay"
+        }
+      },
+      "ios": {
+        "simulator": false,
+        "env": {
+          "EXPO_PUBLIC_API_URL": "https://api.ebalangay.com",
+          "EXPO_PUBLIC_APP_NAME": "eBalangay"
+        }
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle",
+        "env": {
+          "EXPO_PUBLIC_API_URL": "https://api.ebalangay.com",
+          "EXPO_PUBLIC_APP_NAME": "eBalangay"
+        }
+      },
+      "ios": {
+        "env": {
+          "EXPO_PUBLIC_API_URL": "https://api.ebalangay.com",
+          "EXPO_PUBLIC_APP_NAME": "eBalangay"
+        }
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
+}

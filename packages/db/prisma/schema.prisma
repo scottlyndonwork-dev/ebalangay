@@ -1,0 +1,291 @@
+// Prisma schema file
+// npx prisma migrate dev --name init
+// npx prisma generate
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  CUSTOMER
+  MERCHANT
+  RIDER
+  ADMIN
+}
+
+enum BusinessType {
+  RETAIL
+  RESTAURANT
+  PHARMACY
+  HARDWARE
+  WHOLESALE
+  DISTRIBUTOR
+}
+
+enum OrderStatus {
+  PLACED
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(uuid())
+  email         String?   @unique
+  phone         String    @unique
+  name          String
+  role          UserRole
+  passwordHash  String?
+  isVerified    Boolean   @default(false)
+  avatarUrl     String?
+  pushTokens    String[]  @default([]) // For push notifications
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  business      Business?
+  riderProfile  RiderProfile?
+  orders        Order[]   @relation("CustomerOrders")
+  deliveries    Delivery[] @relation("RiderDeliveries")
+  refreshTokens RefreshToken[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+
+  @@map("refresh_tokens")
+}
+
+// ─── Business ─────────────────────────────────────────────────────────────────
+
+model Business {
+  id           String       @id @default(uuid())
+  ownerId      String       @unique
+  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name         String
+  type         BusinessType
+  barangay     String
+  city         String
+  logoUrl      String?
+  isVerified   Boolean      @default(false)
+  canSellB2B   Boolean      @default(false)
+  payoutGcash  String?
+  lat          Float?
+  lng          Float?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  products     Product[]
+  orders       Order[]      @relation("MerchantOrders")
+
+  @@map("businesses")
+}
+
+// ─── Products ─────────────────────────────────────────────────────────────────
+
+model Product {
+  id            String   @id @default(uuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  sku           String?
+  price         Decimal  @db.Decimal(10,2)
+  stockQty      Int      @default(0)
+  reorderAt     Int      @default(5)
+  category      String
+  imageUrl      String?
+  isActive      Boolean  @default(true)
+  isB2B         Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderItems       OrderItem[]
+  b2bPricing       B2BPricing[]
+  inventoryAlerts  InventoryAlert[]
+
+  @@index([businessId, category, isActive])
+  @@map("products")
+}
+
+model B2BPricing {
+  id         String  @id @default(uuid())
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  minQty     Int
+  maxQty     Int?
+  unitPrice  Decimal @db.Decimal(10,2)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("b2b_pricing")
+}
+
+// ─── Orders ───────────────────────────────────────────────────────────────────
+
+model Order {
+  id           String      @id @default(uuid())
+  customerId   String
+  customer     User        @relation("CustomerOrders", fields: [customerId], references: [id])
+  merchantId   String
+  merchant     Business    @relation("MerchantOrders", fields: [merchantId], references: [id])
+  status       OrderStatus @default(PLACED)
+  subtotal     Decimal     @db.Decimal(10,2)
+  deliveryFee  Decimal     @db.Decimal(10,2)
+  commission   Decimal     @db.Decimal(10,2)
+  totalAmount  Decimal     @db.Decimal(10,2)
+  isB2B        Boolean     @default(false)
+  addressLine  String
+  barangay     String
+  notes        String?
+  placedAt     DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  items        OrderItem[]
+  timeline     OrderTimeline[]
+  delivery     Delivery?
+  payment      Payment?
+
+  @@index([customerId, merchantId, status, placedAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10,2)
+  createdAt DateTime @default(now())
+
+  @@map("order_items")
+}
+
+// ─── Order Timeline ───────────────────────────────────────────────────────────
+
+model OrderTimeline {
+  id        String      @id @default(uuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  timestamp DateTime    @default(now())
+  notes     String?
+
+  @@map("order_timelines")
+}
+
+// ─── Delivery ─────────────────────────────────────────────────────────────────
+
+model Delivery {
+  id            String   @id @default(uuid())
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  riderId       String?
+  rider         User?    @relation("RiderDeliveries", fields: [riderId], references: [id])
+  status        String   @default("pending")
+  proofPhotoUrl     String?
+  signaturePhotoUrl String?
+  pickupLat     Float
+  pickupLng     Float
+  dropoffLat    Float
+  dropoffLng    Float
+  deliveredAt   DateTime?
+  payoutProcessed Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([riderId, status])
+  @@map("deliveries")
+}
+
+// ─── Payments ──────────────────────────────────────────────────────────────────
+
+model Payment {
+  id          String   @id @default(uuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider    String   @default("paymongo")
+  reference   String?
+  intentId    String?
+  status      String   @default("pending")
+  amount      Decimal  @db.Decimal(10,2)
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("payments")
+}
+
+// ─── Rider Profile ────────────────────────────────────────────────────────────
+
+model RiderProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gcashNumber     String
+  licenseImageUrl String?
+  vehicleType     String   // ebike, etrike, ecar
+  isVerified      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("rider_profiles")
+}
+
+// ─── Inventory Alerts ─────────────────────────────────────────────────────────
+
+model InventoryAlert {
+  id           String   @id @default(uuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  businessId   String
+  currentStock Int
+  reorderAt    Int
+  severity     String   @default("low") // low, critical, out_of_stock
+  suggestion   String?
+  status       String   @default("sent") // sent, acknowledged, reordered
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("inventory_alerts")
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // restock_alert, low_stock, out_of_stock
+  title     String
+  body      String
+  metadata  Json?
+  status    String   @default("sent") // sent, read, archived
+  sentAt    DateTime @default(now())
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}

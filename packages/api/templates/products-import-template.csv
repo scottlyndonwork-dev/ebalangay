@@ -1,0 +1,16 @@
+name,description,price,stockQty,reorderAt,category,sku,isB2B
+Tanduay Rum 350ml,Premium aged rum from Philippines,75.00,100,10,beverages,TANDUAY-350,false
+San Miguel Beer 330ml,Popular beer brand,45.00,200,15,beverages,BEER-SM-330,false
+White Rabbit Candies,Creamy milk flavored candy,50.00,150,20,candy,RABBIT-WHITE,false
+Instant Noodles Box,Pack of 12 assorted flavors,120.00,300,30,food,NOODLES-BOX,false
+Calamansi Juice 1L,Fresh calamansi concentrate,80.00,50,5,beverages,CALAMANSI-1L,false
+Local Banana Chips,Crispy banana snacks,60.00,100,15,snacks,BANANA-CHIPS,false
+Palawan Mango,Fresh tropical fruit,35.00,200,25,fresh,MANGO-PAL,false
+Corned Beef 396g,Luncheon meat canned,110.00,80,10,canned,CB-396G,false
+Coffee Blend Premium,Ground arabica beans 250g,150.00,60,8,beverages,COFFEE-PREMIUM,true
+Tinapa 300g,Smoked fish specialty,180.00,40,5,frozen,TINAPA-300,false
+Pastillas de Leche,Classic milk candy rolls,75.00,120,15,candy,PASTILLAS-MIL,false
+Patis 750ml,Fish sauce for cooking,50.00,100,20,condiments,PATIS-750,true
+Soy Sauce 1L,Premium soy sauce,65.00,150,20,condiments,SOY-1L,true
+Vinegar Cane 750ml,Pure cane vinegar,40.00,100,15,condiments,VINEGAR-750,false
+Virgin Coconut Oil,Organic coconut oil 500ml,200.00,50,5,oils,COCO-500,false

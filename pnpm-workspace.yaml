@@ -1,0 +1,8 @@
+packages:
+  - 'apps/web-customer'
+  - 'apps/web-merchant'
+  - 'apps/web-admin'
+  - 'apps/mobile'
+  - 'packages/api'
+  - 'packages/db'
+  - 'packages/shared'

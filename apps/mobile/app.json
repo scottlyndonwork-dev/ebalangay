@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "eBalangay",
+    "slug": "ebalangay",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "ebalangay",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "ph.ebalangay.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "eBalangay needs your location to show nearby stores and track your delivery.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "eBalangay uses your location in the background to update delivery tracking."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#16a34a"
+      },
+      "package": "ph.ebalangay.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "eBalangay uses your location for delivery tracking."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "eBalangay needs access to take proof of delivery photos.",
+          "cameraPermission": "eBalangay needs camera access to take proof of delivery photos."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}
